@@ -1,0 +1,111 @@
+/* Reset some default styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px 40px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  color: #222;
+  margin-bottom: 30px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+form#movieForm {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+label {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+select {
+  padding: 8px 12px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  outline-offset: 2px;
+  cursor: pointer;
+  flex-grow: 1; 
+}
+
+button#fetchMoviesButton {
+  padding: 12px 28px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+button#fetchMoviesButton:hover,
+button#fetchMoviesButton:focus {
+  background-color: #218838;
+  outline: none;
+}
+
+#movies-list {
+  margin-top: 25px;
+  width: 100%;
+}
+
+.movie {
+  background-color: #fafafa;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.movie:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .container {
+    padding: 20px;
+  }
+
+  form#movieForm {
+    flex-direction: column;
+    gap: 10px;
+    max-width: 100%;
+  }
+
+  select,
+  button#fetchMoviesButton {
+    width: 100%;
+    flex-grow: 0;
+  }
+}
