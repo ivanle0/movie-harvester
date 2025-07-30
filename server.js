@@ -20,6 +20,72 @@ const pool = mysql.createPool({
 // TMDB API Key
 const API_KEY = process.env.TMDB_API_KEY;
 
+// Fetch movies from TMDB API for a given year
+const fetchMoviesFromAPI = async (year) => {
+  try {
+    const url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&primary_release_year=${year}&language=en-US&page=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+    return data.results || [];
+  } catch (err) {
+    console.error('Error fetching from TMDB API:', err);
+    return [];
+  }
+};
+
+// GET /api/movies/:year endpoint
+app.get('/api/movies/:year', async (req, res) => {
+  const { year } = req.params;
+
+  // Validate year input
+  if (isNaN(year) || year < 1900 || year > 2030) {
+    return res.status(400).json({ error: 'Invalid year provided' });
+  }
+
+  try {
+    pool.query('SELECT * FROM movies WHERE year = ?', [year], async (err, results) => {
+      if (err) {
+        console.error('Error querying database:', err);
+        return res.status(500).json({ error: 'Database query error' });
+      }
+
+      if (results.length > 0) {
+        console.log(`Movies found in DB for year ${year}.`);
+        return res.status(200).json(results);
+      }
+
+      console.log(`No movies in DB for year ${year}. Fetching from TMDB...`);
+      const movies = await fetchMoviesFromAPI(year);
+      if (!movies.length) {
+        return res.status(404).json({ message: 'No movies found for this year.' });
+      }
+
+      // Insert movies into DB
+      // Problem is here. Not waiting until all movies are inserted
+      movies.forEach(movie => {
+        const { title, genre_ids, imdb_id } = movie;
+        const genre = genre_ids?.join(',') || '';
+
+        pool.query(
+          'INSERT INTO movies (title, year, genre, imdb_id, owned) VALUES (?, ?, ?, ?, ?)',
+          [title, year, genre, imdb_id || '', 0],
+          insertErr => {
+            if (insertErr) {
+              console.error('Error inserting movie into DB:', insertErr);
+            }
+          }
+        );
+      });
+
+      return res.status(200).json(movies);
+    });
+  } catch (error) {
+    console.error('Unhandled error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.use(express.static('public'));
 
 // Start server
 app.listen(port, () => {
