@@ -90,27 +90,35 @@ app.get('/api/movies/:year', async (req, res) => {
         return res.status(404).json({ message: 'No movies found for this year.' });
       }
 
-      // Insert movies into DB
-      // Problem is here. Not waiting until all movies are inserted
-      movies.forEach(movie => {
+      // Insert movies into DB and wait until all movies are inserted
+      const insertPromises = movies.map(movie => {
         const title = movie.title;
         const genre_ids = movie.genre_ids;
         const genre = getGenreNames(genre_ids);
         const tmdb_id = movie.id;
-
-        pool.query(
-          'INSERT INTO movies (title, year, genre, tmdb_id, owned) VALUES (?, ?, ?, ?, ?)',
-          [title, year, genre, tmdb_id || '', 0],
-          insertErr => {
-            if (insertErr) {
-              console.error('Error inserting movie into DB:', insertErr);
+        return new Promise((resolve, reject) => {
+          pool.query(
+            'INSERT INTO movies (title, year, genre, tmdb_id, owned) VALUES (?, ?, ?, ?, ?)',
+            [title, year, genre, tmdb_id || '', 0],
+            (insertErr) => {
+              if (insertErr) {
+                console.error('Error inserting movie into DB:', insertErr);
+                return reject(insertErr);
+              }
+              resolve();
             }
-          }
-        );
+          );
+        });
       });
-      
-      console.log(`Inserted ${movies.length} movies into DB for year ${year}.`);
-      return res.status(200).json(movies);
+
+      try {
+        await Promise.all(insertPromises);
+        console.log(`Inserted ${movies.length} movies into DB for year ${year}.`);
+        return res.status(200).json(movies);
+      } catch (insertError) {
+        console.error('Error inserting some movies:', insertError);
+        return res.status(500).json({ error: 'Error inserting movies into database' });
+      }
     });
   } catch (error) {
     console.error('Unhandled error:', error);
