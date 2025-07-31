@@ -20,6 +20,36 @@ const pool = mysql.createPool({
 // TMDB API Key
 const API_KEY = process.env.TMDB_API_KEY;
 
+// Genre Map
+const genreMap = {
+  28: 'Action',
+  12: 'Adventure',
+  16: 'Animation',
+  35: 'Comedy',
+  80: 'Crime',
+  99: 'Documentary',
+  18: 'Drama',
+  10751: 'Family',
+  14: 'Fantasy',
+  36: 'History',
+  27: 'Horror',
+  10402: 'Music',
+  9648: 'Mystery',
+  10749: 'Romance',
+  878: 'Science Fiction',
+  10770: 'TV Movie',
+  53: 'Thriller',
+  10752: 'War',
+  37: 'Western'
+};
+
+// Get Genre Names from Genre IDs
+const getGenreNames = (genre_ids) => {
+  if (!Array.isArray(genre_ids) || genre_ids.length === 0) return 'Unknown';
+  const genreNames = genre_ids.map(id => genreMap[id] || 'Unknown');
+  return genreNames.join(', ');
+};
+
 // Fetch movies from TMDB API for a given year
 const fetchMoviesFromAPI = async (year) => {
   try {
@@ -64,8 +94,7 @@ app.get('/api/movies/:year', async (req, res) => {
       // Problem is here. Not waiting until all movies are inserted
       movies.forEach(movie => {
         const title = movie.title;
-        const genre_ids = movie.genre_ids;
-        const genre = genre_ids?.join(',') || '';
+        const genre = getGenreNames(genre_ids);
         const tmdb_id = movie.id;
 
         pool.query(
