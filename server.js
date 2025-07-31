@@ -94,6 +94,7 @@ app.get('/api/movies/:year', async (req, res) => {
       // Problem is here. Not waiting until all movies are inserted
       movies.forEach(movie => {
         const title = movie.title;
+        const genre_ids = movie.genre_ids;
         const genre = getGenreNames(genre_ids);
         const tmdb_id = movie.id;
 
