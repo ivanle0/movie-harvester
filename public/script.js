@@ -31,7 +31,7 @@ async function fetchMoviesByYear() {
           <p>Year: ${movie.year}</p>
           <p>Genre: ${movie.genre}</p>
           <p>Owned: ${movie.owned ? 'Yes' : 'No'}</p>
-          <p>IMDB ID: ${movie.imdb_id}</p>
+          <p>TMDB ID: ${movie.tmdb_id}</p>
         `;
         moviesList.appendChild(movieElement);
       });

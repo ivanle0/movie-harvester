@@ -38,7 +38,7 @@ app.get('/api/movies/:year', async (req, res) => {
   const { year } = req.params;
 
   // Validate year input
-  if (isNaN(year) || year < 1900 || year > 2030) {
+  if (isNaN(year) || year < 1930 || year > 2030) {
     return res.status(400).json({ error: 'Invalid year provided' });
   }
 
@@ -63,12 +63,14 @@ app.get('/api/movies/:year', async (req, res) => {
       // Insert movies into DB
       // Problem is here. Not waiting until all movies are inserted
       movies.forEach(movie => {
-        const { title, genre_ids, imdb_id } = movie;
+        const title = movie.title;
+        const genre_ids = movie.genre_ids;
         const genre = genre_ids?.join(',') || '';
+        const tmdb_id = movie.id;
 
         pool.query(
-          'INSERT INTO movies (title, year, genre, imdb_id, owned) VALUES (?, ?, ?, ?, ?)',
-          [title, year, genre, imdb_id || '', 0],
+          'INSERT INTO movies (title, year, genre, tmdb_id, owned) VALUES (?, ?, ?, ?, ?)',
+          [title, year, genre, tmdb_id || '', 0],
           insertErr => {
             if (insertErr) {
               console.error('Error inserting movie into DB:', insertErr);
@@ -76,7 +78,8 @@ app.get('/api/movies/:year', async (req, res) => {
           }
         );
       });
-
+      
+      console.log(`Inserted ${movies.length} movies into DB for year ${year}.`);
       return res.status(200).json(movies);
     });
   } catch (error) {
@@ -84,8 +87,6 @@ app.get('/api/movies/:year', async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-app.use(express.static('public'));
 
 // Start server
 app.listen(port, () => {
